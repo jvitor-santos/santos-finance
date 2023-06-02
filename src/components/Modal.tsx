@@ -192,95 +192,23 @@ export function AddDebit({ handleClose, handleYear, handleMonth }: any) {
     </KeyboardAvoidingView>
   )
 }
-export function Login({ handleClose, handleGetPassword, handleGetId }: any) {
-  const Decrypted = CryptoES.AES.decrypt(handleGetPassword, 'your password')
-  const DecryptedPassword = Decrypted.toString(CryptoES.enc.Utf8)
-  const [password, setPassword] = useState('')
-  const { saveId } = useUser()
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-    >
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <TouchableOpacity
-            style={{ flex: 1 }}
-            onPress={handleClose}
-          ></TouchableOpacity>
-
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, height: '40%' }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Box
-              bg={'rgba(18, 18, 20, 0.9)'}
-              width={'80%'}
-              borderRadius={15}
-              marginLeft={'10%'}
-              p={5}
-              alignItems={'center'}
-            >
-              <Heading
-                color="gray.100"
-                fontSize={18}
-                mb={4}
-                fontFamily="heading"
-                textAlign={'center'}
-              >
-                Login
-              </Heading>
-              <Input
-                placeholder="Digite a senha"
-                mt={4}
-                secureTextEntry
-                onChangeText={(text) => setPassword(text)}
-                bgColor={'white'}
-                h={10}
-                fontSize={16}
-              />
-              <Button
-                title={'Entrar'}
-                onPress={() => {
-                  if (password === DecryptedPassword) {
-                    saveId(handleGetId)
-                  } else {
-                    Alert.alert('Senha incorreta')
-                  }
-                }}
-              />
-            </Box>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={handleClose}
-            ></TouchableOpacity>
-          </ScrollView>
-
-          <TouchableOpacity
-            style={{ flex: 1 }}
-            onPress={handleClose}
-          ></TouchableOpacity>
-        </ScrollView>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
-  )
-}
 export function CreateUser({ handleClose }: any) {
   const { listAccounts } = useUser()
   const key = uuidv4()
   const [name, setName] = useState('')
+  const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const criptoPassword = CryptoES.AES.encrypt(
     password,
     'your password',
   ).toString()
-  const validate = listAccounts.some((item) => item.name === name)
+  const validate = listAccounts.some((item) => item.login === login)
 
   async function handleNewUser() {
     if (password === '') {
       await firestore().collection('users').doc(key).set({
+        login,
         name,
         password: null,
         avatar:
@@ -291,6 +219,7 @@ export function CreateUser({ handleClose }: any) {
       handleClose()
     } else {
       await firestore().collection('users').doc(key).set({
+        login,
         name,
         password: criptoPassword,
         avatar:
@@ -319,7 +248,7 @@ export function CreateUser({ handleClose }: any) {
             keyboardShouldPersistTaps="handled"
           >
             <Box
-              bg={'rgba(18, 18, 20, 0.9)'}
+              bg={'#000'}
               width={'80%'}
               borderRadius={15}
               marginLeft={'10%'}
@@ -335,6 +264,14 @@ export function CreateUser({ handleClose }: any) {
               >
                 Criar usuario
               </Heading>
+              <Input
+                placeholder="Digite o login"
+                mt={4}
+                onChangeText={(text) => setLogin(text)}
+                bgColor={'white'}
+                h={10}
+                fontSize={16}
+              />
               <Input
                 placeholder="Digite seu nome"
                 mt={4}
@@ -364,12 +301,18 @@ export function CreateUser({ handleClose }: any) {
               <Button
                 title={'Criar conta'}
                 onPress={() => {
-                  if (password === passwordConfirm && !validate) {
+                  if (
+                    password === passwordConfirm &&
+                    !validate &&
+                    name !== ''
+                  ) {
                     handleNewUser()
                   } else if (validate) {
-                    Alert.alert('Nome já existe')
-                  } else {
+                    Alert.alert('Login já existe')
+                  } else if (password !== passwordConfirm) {
                     Alert.alert('Senhas não conferem')
+                  } else if (name === '') {
+                    Alert.alert('Digite o nome')
                   }
                 }}
               />

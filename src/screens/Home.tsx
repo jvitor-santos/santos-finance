@@ -1,108 +1,76 @@
-import { Avatar } from '@components/Avatar'
-import { ButtonAdd } from '@components/ButtonAdd'
-import { CreateUser, Login } from '@components/Modal'
+import { CreateUser } from '@components/Modal'
 import { useUser } from '@hooks/useUser'
-import { Container, FlatList, Heading, Image, Text, View } from 'native-base'
+import { Heading, Image, View, Box, Input, Link } from 'native-base'
 import { useState } from 'react'
-import { Modal, TouchableOpacity } from 'react-native'
+import { Modal } from 'react-native'
 import logo from '../../assets/logo.png'
+import { Button } from '@components/Button'
 
 export function Home() {
-  const { saveId } = useUser()
-  const [visibleModal, setVisibleModal] = useState(false)
   const [visibleModalAdd, setVisibleModalAdd] = useState(false)
-  const [tryPassword, setTryPassword] = useState<string | null | undefined>()
-  const [accountId, setAccountId] = useState<string | null>()
+  const [login, setLogin] = useState('')
+  const [password, setPassword] = useState('')
 
-  const { listAccounts } = useUser()
+  const { handleLogin } = useUser()
 
-  if (listAccounts && listAccounts.length !== 0) {
-    return (
-      <View flex={1} justifyContent={'center'} alignItems={'center'}>
-        <Heading mt={'100px'} flex={1}>
-          <Image alt="Logo do app" source={logo} size={56} />
+  return (
+    <View flex={1} justifyContent={'center'} alignItems={'center'}>
+      <Heading flex={1} mt={'5rem'}>
+        <Image alt="Logo do app" source={logo} size={56} />
+      </Heading>
+      <Box
+        position={'absolute'}
+        bg={'rgba(18, 18, 20, 0.9)'}
+        width={'80%'}
+        borderRadius={15}
+        p={5}
+        alignItems={'center'}
+      >
+        <Heading
+          color="gray.100"
+          fontSize={18}
+          mb={4}
+          fontFamily="heading"
+          textAlign={'center'}
+        >
+          Login
         </Heading>
-        <View flex={1} alignItems={'center'} mt={'-500px'}>
-          <FlatList
-            data={listAccounts}
-            numColumns={3}
-            renderItem={({ item, index }) => (
-              <TouchableOpacity
-                style={{
-                  alignItems: 'center',
-                  margin: 10,
-                }}
-                onPress={() => {
-                  if (item.password === null) {
-                    saveId(item.id)
-                  } else {
-                    setTryPassword(item.password)
-                    setAccountId(item.id)
-                    setVisibleModal(true)
-                  }
-                }}
-              >
-                <Avatar
-                  source={{
-                    uri: item.avatar,
-                  }}
-                  size={'90px'}
-                  alt="Foto do usuario"
-                />
-                <Text color={'white'}>{item.name}</Text>
-              </TouchableOpacity>
-            )}
-            _contentContainerStyle={{ paddingBottom: '30px' }}
-          />
-          <Container marginBottom={'20%'} alignItems={'center'}>
-            <Text color={'white'} fontSize={'2xl'} mb={'10px'}>
-              Adicionar usuário
-            </Text>
-            <ButtonAdd
-              onPress={() => {
-                setVisibleModalAdd(true)
-              }}
-            />
-          </Container>
-          <Modal
-            visible={visibleModal}
-            transparent={true}
-            onRequestClose={() => setVisibleModal(false)}
-            animationType="slide"
-          >
-            <Login
-              handleClose={() => setVisibleModal(false)}
-              handleGetPassword={tryPassword}
-              handleGetId={accountId}
-            />
-          </Modal>
-          <Modal
-            visible={visibleModalAdd}
-            transparent={true}
-            onRequestClose={() => setVisibleModalAdd(false)}
-            animationType="slide"
-          >
-            <CreateUser handleClose={() => setVisibleModalAdd(false)} />
-          </Modal>
-        </View>
-      </View>
-    )
-  } else {
-    return (
-      <View flex={1} alignItems={'center'} mt={'60%'}>
-        <Heading mt={'100px'} flex={1}>
-          <Image alt="Logo do app" source={logo} size={56} />
-        </Heading>
-        <Container marginBottom={'50%'} alignItems={'center'}>
-          <Text color={'white'} fontSize={'2xl'} mb={'10px'}>
-            Adicionar usuário
-          </Text>
-          <ButtonAdd
-            onPress={() => {
-              setVisibleModalAdd(true)
-            }}
-          />
-        </Container>
+        <Input
+          placeholder="Login"
+          mt={4}
+          bgColor={'white'}
+          h={10}
+          onChangeText={(text) => {
+            setLogin(text)
+          }}
+          fontSize={16}
+        />
+        <Input
+          placeholder="Digite a senha"
+          mt={4}
+          secureTextEntry
+          bgColor={'white'}
+          h={10}
+          onChangeText={(text) => {
+            setPassword(text)
+          }}
+          fontSize={16}
+        />
+        <Button
+          title={'Entrar'}
+          onPress={() => {
+            handleLogin(login, password)
+          }}
+        />
+        <Link
+          mt={4}
+          _text={{ color: 'white', fontSize: 'sm', fontWeight: '700' }}
+          onPress={() => {
+            setVisibleModalAdd(true)
+          }}
+        >
+          Criar uma conta
+        </Link>
         <Modal
           visible={visibleModalAdd}
           transparent={true}
@@ -111,7 +79,7 @@ export function Home() {
         >
           <CreateUser handleClose={() => setVisibleModalAdd(false)} />
         </Modal>
-      </View>
-    )
-  }
+      </Box>
+    </View>
+  )
 }

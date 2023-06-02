@@ -41,7 +41,7 @@ export function UserOptions() {
           title="Ver dividas"
           onPress={() => navigation.navigate('yers')}
         />
-        <Button title="Adicionar senha" onPress={() => setVisibleModal(true)} />
+        <Button title="Alterar senha" onPress={() => setVisibleModal(true)} />
         <Button
           title="Alterar foto"
           onPress={() => handleUserPhotoSelected()}

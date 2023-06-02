@@ -3,10 +3,13 @@ import storage from '@react-native-firebase/storage'
 import * as ImagePicker from 'expo-image-picker'
 import { ReactNode, createContext, useEffect, useState } from 'react'
 import { MMKV } from 'react-native-mmkv'
+import CryptoES from 'crypto-es'
+import { Alert } from 'react-native'
 
 const LocalStorage = new MMKV({ id: 'myapp' })
 
 type Account = {
+  login?: string
   name?: string
   password?: string | null | undefined
   avatar?: string
@@ -25,6 +28,7 @@ interface UserContextDataProps {
   handlePictureSelected: any
   listReceipts: any
   upLoadLoading: boolean
+  handleLogin: any
 }
 
 interface UserContextProviderProps {
@@ -50,6 +54,35 @@ export function UserContextProvider({ children }: UserContextProviderProps) {
         setAccounts(accounts)
       })
   }, [])
+
+  function handleLogin(login: string, password: string) {
+    firestore()
+      .collection('users')
+      .get()
+      .then((querySnapshot) => {
+        const users = querySnapshot.docs.map((doc) => doc.data())
+        const user = users.find((user) => user.login === login)
+
+        if (user && user.password !== null) {
+          const Decrypted = CryptoES.AES.decrypt(user.password, 'your password')
+          const DecryptedPassword = Decrypted.toString(CryptoES.enc.Utf8)
+
+          if (password === DecryptedPassword) {
+            setUserId(user.id)
+            LocalStorage.set('userId', user.id)
+          } else {
+            Alert.alert('Senha incorreta')
+          }
+        } else if (user && user.password === null && password === '') {
+          setUserId(user.id)
+          LocalStorage.set('userId', user.id)
+        } else if (user && user.password === null && password !== '') {
+          Alert.alert('Senha incorreta')
+        } else {
+          Alert.alert('Usuario não encontrado')
+        }
+      })
+  }
 
   function fetchUser() {
     const data = LocalStorage.getString('userId')
@@ -204,6 +237,7 @@ export function UserContextProvider({ children }: UserContextProviderProps) {
         handlePictureSelected,
         listReceipts,
         upLoadLoading,
+        handleLogin,
       }}
     >
       {children}
